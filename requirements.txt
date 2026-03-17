@@ -4,3 +4,4 @@ beautifulsoup4
 lxml
 apscheduler
 python-dotenv
+fastf1>=3.4.0
