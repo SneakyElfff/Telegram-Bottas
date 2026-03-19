@@ -1,3 +1,4 @@
+import os
 import fastf1
 import pandas as pd
 from datetime import datetime, timedelta
@@ -6,6 +7,8 @@ import logging
 from config.config import tz_map, DATA_DIR
 
 logger = logging.getLogger(__name__)
+
+os.makedirs(str(DATA_DIR / 'fastf1_cache'), exist_ok=True)
 fastf1.Cache.enable_cache(str(DATA_DIR / 'fastf1_cache'))
 
 days_to_wed = 4

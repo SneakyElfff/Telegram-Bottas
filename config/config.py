@@ -10,7 +10,7 @@ TOKEN = os.getenv("TELEGRAM_TOKEN")
 if not TOKEN:
     raise ValueError("TELEGRAM_TOKEN environment variable not set")
 
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
