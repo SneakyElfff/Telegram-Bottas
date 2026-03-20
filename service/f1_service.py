@@ -2,7 +2,6 @@ import os
 import fastf1
 import pandas as pd
 from datetime import datetime, timedelta
-import zoneinfo
 import logging
 from config.config import tz_map, DATA_DIR
 
@@ -17,13 +16,38 @@ def get_next_event():
     year = datetime.now().year
 
     try:
-        schedule = fastf1.get_event_schedule(year)
+        schedule = fastf1.get_event_schedule(year, include_testing=False)
     except Exception as e:
         logger.error(f"Failed to load F1 calendar: {e}")
-        return []
+        return None
+
+    if schedule.empty:
+        logger.info(f"No events found for year {year}")
+        return None
 
     next_event = schedule[pd.to_datetime(schedule["EventDate"]) > pd.Timestamp.now(tz="UTC").to_datetime64()]
-    return next_event.iloc[0] if not next_event.empty else next_event
+
+    if next_event.empty:
+        logger.info(f"No more upcoming events in {year}")
+        return None
+
+    return next_event.iloc[0]
+
+def is_race_week(event: pd.Series) -> bool:
+    if event is None:
+        return False
+
+    start_day = pd.to_datetime(event["Session1DateUtc"])
+    today = pd.Timestamp.now(tz="UTC")
+
+    start_day_iso = start_day.isocalendar()
+    today_iso = today.isocalendar()
+
+    if today_iso[:2] == start_day_iso[:2]:
+        return True
+
+    return False
+
 
 def get_fia_slug(event_name: str) -> str:
     return event_name.lower().replace(" grand prix", "-gp").replace(" ", "-")
