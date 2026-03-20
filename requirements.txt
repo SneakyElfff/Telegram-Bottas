@@ -4,3 +4,4 @@ beautifulsoup4
 pandas
 python-dotenv
 fastf1>=3.4.0
+apscheduler
