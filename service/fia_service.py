@@ -2,6 +2,8 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 
+logger = logging.getLogger(__name__)
+
 def build_url(year: int, slug: str) -> str:
     return f"https://www.fia.com/news/f1-{year}-{slug}-schedule-press-conferences"
 
@@ -11,7 +13,7 @@ def fetch_schedule(url: str) -> str | None:
         if req.status_code != 200:
             return None
     except Exception as e:
-        logging.error(f"Error fetching schedule: {e}")
+        logger.error(f"Error fetching schedule: {e}")
         return None
 
     soup = BeautifulSoup(req.text, "html.parser")
