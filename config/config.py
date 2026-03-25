@@ -1,4 +1,3 @@
-import logging
 import os
 from pathlib import Path
 import telebot 
@@ -45,9 +44,3 @@ tz_map = {
     # Fallback
     '': 'UTC'
 }
-
-logging.basicConfig(
-    level=logging.INFO,
-    format = '%(asctime)s | %(levelname)s | %(message)s',
-    handlers=[logging.StreamHandler()]
-)
