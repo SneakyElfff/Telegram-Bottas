@@ -46,7 +46,7 @@ class Monitor:
             url = build_url(year, slug)
             logger.info(f"It's race week at {gp_name}. Checking schedule: {url}")
 
-            message_text = fetch_schedule(url)
+            message_text = fetch_schedule(url, event)
 
             if message_text:
                 subscribers = get_subscribers(active_only=True)
@@ -66,6 +66,7 @@ class Monitor:
         except Exception as e:
             logger.error(f"Monitor error: {e}", exc_info=True)
 
+    # TODO: add rescheduling to send local timezone as an argument
     def run(self):
         logger.info(f"Monitor started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
