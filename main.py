@@ -4,13 +4,14 @@ from config.config import bot
 import bot.handlers as _handlers
 from config.logging_config import setup_logging
 from monitor.monitor import Monitor
-from storage.database import init_db
+from storage.database import init_db, update_db
 
 logger = logging.getLogger(__name__)
 
 def main():
     setup_logging()
     init_db()
+    update_db()
 
     monitor = Monitor()
     monitor_thread = threading.Thread(target=monitor.run, daemon=True)

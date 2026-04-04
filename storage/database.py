@@ -38,6 +38,17 @@ def init_db():
     conn.commit()
     logger.info("Database initialized at %s", DB_PATH)
 
+def update_db():
+    conn = get_connection()
+
+    conn.execute("""
+        ALTER TABLE subscribers
+        ADD COLUMN timezone TEXT DEFAULT "UTC+0"
+    """)
+
+    conn.commit()
+    logger.info("Database updated.")
+
 # ────────────────────────────────────────────────
 # Subscribers
 # ────────────────────────────────────────────────
