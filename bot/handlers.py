@@ -24,9 +24,14 @@ def handle_unsubscribe(message):
 @bot.message_handler(commands=["timezone"])
 def handle_timezone(message):
     markup = InlineKeyboardMarkup(row_width=4)
+
+    buttons = []
     for i in range(-12, 15, 1):
         text = "UTC" + ("+" if i>=0 else "") + str(i)
-        markup.add(InlineKeyboardButton(text, callback_data=f"set_tz:{text}"))
+        btn = InlineKeyboardButton(text, callback_data=f"set_tz:{text}")
+        buttons.append(btn)
+
+    markup.add(*buttons)
 
     bot.send_message(
         message.chat.id,
