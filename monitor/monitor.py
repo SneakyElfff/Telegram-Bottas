@@ -1,11 +1,12 @@
 import logging
+import re
 import zoneinfo
 from datetime import datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from config.config import tz_map, bot
 from service.f1_service import get_next_event, get_fia_slug, is_race_week, get_local_pre_media_day
-from service.fia_service import build_url, fetch_schedule
+from service.fia_service import build_url, fetch_schedule, adapt_message
 from storage.database import load_last_notified, get_subscribers, save_last_notified
 
 logger = logging.getLogger(__name__)
@@ -52,8 +53,9 @@ class Monitor:
                 subscribers = get_subscribers(active_only=True)
                 logger.info(f"Schedule found! Notifying {len(subscribers)} subscribers")
 
-                for chat_id in subscribers:
+                for chat_id, timezone in subscribers.items():
                     try:
+                        message_text = adapt_message(message_text, event, re.search(r'\d+', timezone).group(1))
                         bot.send_message(chat_id, message_text, parse_mode="Markdown")
                     except Exception as e:
                         logger.warning(f"Failed to notify {chat_id}: {e}")

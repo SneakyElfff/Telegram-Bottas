@@ -1,7 +1,7 @@
 import json
 import logging
 import sqlite3
-from typing import List, Dict, Any
+from typing import Dict, Any
 from config.config import DATA_DIR
 
 logger = logging.getLogger(__name__)
@@ -24,6 +24,7 @@ def init_db():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS subscribers (
             chat_id INTEGER PRIMARY KEY,
+            timezone TEXT DEFAULT "UTC+0",
             subscribed_at TEXT DEFAULT (datetime('now')),
             active BOOLEAN DEFAULT 1
         )
@@ -38,30 +39,19 @@ def init_db():
     conn.commit()
     logger.info("Database initialized at %s", DB_PATH)
 
-def update_db():
-    conn = get_connection()
-
-    conn.execute("""
-        ALTER TABLE subscribers
-        ADD COLUMN timezone TEXT DEFAULT "UTC+0"
-    """)
-
-    conn.commit()
-    logger.info("Database updated.")
-
 # ────────────────────────────────────────────────
 # Subscribers
 # ────────────────────────────────────────────────
 
-def get_subscribers(active_only: bool = True) -> List[int]:
+def get_subscribers(active_only: bool = True) -> Dict[str, str]:
     conn = get_connection()
 
-    query = "SELECT chat_id FROM subscribers"
+    query = "SELECT chat_id, timezone FROM subscribers"
     if active_only:
         query += " WHERE active = 1"
 
     rows = conn.execute(query).fetchall()
-    return [row["chat_id"] for row in rows]
+    return { row["chat_id"]: row["timezone"] for row in rows}
 
 def add_subscriber(chat_id: int) -> bool:
     conn = get_connection()
@@ -89,6 +79,20 @@ def remove_subscriber(chat_id: int) -> bool:
 
     except sqlite3.Error as error:
         logger.error("Failed to remove the subscriber: %s", error)
+        return False
+
+def set_timezone(chat_id: int, timezone: str) -> bool:
+    conn = get_connection()
+    try:
+        cursor = conn.execute(
+            "UPDATE subscribers SET timezone = ? WHERE chat_id = ?",
+            (timezone, chat_id)
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+
+    except sqlite3.Error as error:
+        logger.error("Failed to set a timezone: %s", error)
         return False
 
 # ────────────────────────────────────────────────

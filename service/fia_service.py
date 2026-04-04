@@ -1,7 +1,8 @@
 import logging
+import re
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import zoneinfo
 from config.config import tz_map
 
@@ -50,8 +51,6 @@ def fetch_schedule(url: str, event) -> str | None:
             t = t.replace("hrs", "").strip()
             if len(t) == 4 and t.isdigit():
                 t = f"{t[:2]}:{t[2:]}"
-                # TODO: allow subscribers to choose timezone
-                t = convert_timezone(t, event, "Europe/Minsk")
             time_formatted.append(t)
 
         message.append(f"<b><i>{time_formatted[0]}</i></b>")
@@ -67,7 +66,7 @@ def fetch_schedule(url: str, event) -> str | None:
     message.append(f'\n<a href="{url}">Source</a>')
     return "\n".join(message)
 
-def convert_timezone(time: str, event, tz: str) -> str:
+def convert_timezone(time: str, event, tz: timezone) -> str:
     try:
         naive_datetime = datetime.combine(event["EventDate"].date(), datetime.strptime(time, "%H:%M").time())
     except ValueError:
@@ -76,7 +75,17 @@ def convert_timezone(time: str, event, tz: str) -> str:
 
     local_datetime = naive_datetime.replace(tzinfo=zoneinfo.ZoneInfo(tz_map.get(event["Location"], "UTC")))
 
-    target_datetime = local_datetime.astimezone(zoneinfo.ZoneInfo(tz))
-    target_time = target_datetime.strftime("%H:%M MSK")
+    target_datetime = local_datetime.astimezone(tz)
+    target_time = target_datetime.strftime("%H:%M %Z")
 
     return target_time
+
+# TODO: move to a new service
+def adapt_message(message: str, e, shift: int) -> str:
+    pattern = r'<b><i>(\d{2}:\d{2})</i></b>'
+    for match in re.finditer(pattern, message):
+        local_time = match.group(1)
+        converted_time = convert_timezone(local_time, e, timezone(timedelta(hours=shift)))
+        message = message.replace(f'<b><i>{local_time}</i></b>', f'<b><i>{converted_time}</i></b>', 1)
+
+    return message

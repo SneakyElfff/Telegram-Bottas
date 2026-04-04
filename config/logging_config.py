@@ -36,3 +36,4 @@ def setup_logging():
     root_logger.addHandler(file_handler)
 
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
+    logging.getLogger("TeleBot").setLevel(logging.CRITICAL)
