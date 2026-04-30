@@ -55,7 +55,7 @@ class Monitor:
 
                 for chat_id, timezone in subscribers.items():
                     try:
-                        message_text = adapt_message(message_text, event, re.search(r'\d+', timezone).group(1))
+                        message_text = adapt_message(message_text, event, timezone)
                         bot.send_message(chat_id, message_text, parse_mode="HTML")
                     except Exception as e:
                         logger.warning(f"Failed to notify {chat_id}: {e}")

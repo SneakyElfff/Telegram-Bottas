@@ -81,7 +81,12 @@ def convert_timezone(time: str, event, tz: timezone) -> str:
     return target_time
 
 # TODO: move to a new service
-def adapt_message(message: str, e, shift: int) -> str:
+def adapt_message(message: str, e, tz: str) -> str:
+    match = re.search(r'UTC([+-]?\d+)', tz)
+    if not match:
+        raise ValueError(f"Failed to parse timezone: {tz}")
+    shift = int(match.group(1))
+
     pattern = r'<b><i>(\d{2}:\d{2})</i></b>'
     for match in re.finditer(pattern, message):
         local_time = match.group(1)
